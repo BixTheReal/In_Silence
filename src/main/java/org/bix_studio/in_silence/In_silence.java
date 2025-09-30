@@ -1,10 +1,13 @@
 package org.bix_studio.in_silence;
 
 import com.mojang.logging.LogUtils;
+import foundry.veil.api.client.render.VeilRenderSystem;
+import foundry.veil.api.client.render.post.PostProcessingManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
@@ -32,9 +35,31 @@ import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import org.slf4j.Logger;
 
+import java.util.Set;
+
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(In_silence.MODID)
 public class In_silence {
+
+    @EventBusSubscriber(modid = "in_silence", bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    public class DebugVeil {
+
+        @SubscribeEvent
+        public static void onClientSetup(FMLClientSetupEvent event) {
+            event.enqueueWork(() -> {
+                PostProcessingManager manager = VeilRenderSystem.renderer().getPostProcessingManager();
+                Set<ResourceLocation> pipelines = manager.getPipelines();
+
+                System.out.println("========== VEIL PIPELINES ==========");
+                System.out.println("Anzahl gefunden: " + pipelines.size());
+                for (ResourceLocation pipeline : pipelines) {
+                    System.out.println("  ✓ " + pipeline);
+                }
+                System.out.println("====================================");
+            });
+        }
+    }
+
     // Define mod id in a common place for everything to reference
     public static final String MODID = "in_silence";
     // Directly reference a slf4j logger
